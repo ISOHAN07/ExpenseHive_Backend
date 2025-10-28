@@ -9,6 +9,7 @@ const expenseSchema = new mongoose.Schema({
   expenseCategory: {
     type: String,
     required: true,
+    ref: "Category"
   },
   expenseDesc: {
     type: String,

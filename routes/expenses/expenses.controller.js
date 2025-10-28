@@ -1,4 +1,5 @@
 const Expense = require("../../models/expenses.mongo");
+const Category = require("../../models/category.mongo");
 
 // New Expense
 const createExpense = async (req, res, next) => {
@@ -21,6 +22,13 @@ const createExpense = async (req, res, next) => {
       !userId
     ) {
       return res.status(400).json({ error: "All fields are required." });
+    }
+
+    const categoryExists = await Category.findOne({name:expenseCategory});
+    if (!categoryExists) {
+      return res
+        .status(400)
+        .json({ message: "Invalid category — does not exist" });
     }
 
     const expense = await Expense.create({
