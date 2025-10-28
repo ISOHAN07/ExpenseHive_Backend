@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-
+const expenseRoutes = require("../routes/expenses/expenses.router")
 const app = express();
 
 app.use(
@@ -10,9 +10,6 @@ app.use(
 );
 
 app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.send("Hello from the backend 👋");
-});
+app.use("/expenses", expenseRoutes)
 
 module.exports = app;

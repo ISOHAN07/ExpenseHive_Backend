@@ -1,18 +1,19 @@
 const http = require("http");
 const mongoose = require("mongoose");
 const app = require("./app");
+const dotenv = require("dotenv")
 const PORT = process.env.PORT || 8000;
 
-const MONGO_URL = "";
+dotenv.config()
 
 const server = http.createServer(app);
 
 async function startServer() {
   try {
-    // await mongoose.connect(MONGO_URL, {
-    //   useNewUrlParser: true,
-    //   useUnifiedTopology: true,
-    // });
+    await mongoose.connect(process.env.MONGO_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log("MongoDB Connected");
 
     server.listen(PORT, () => {
