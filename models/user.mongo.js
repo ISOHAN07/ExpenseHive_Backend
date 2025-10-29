@@ -15,6 +15,14 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
+    phone: {
+        type: Number,
+        default: 7340202804
+    },
+    location: {
+        type: String,
+        default: "Pune"
+    }
   },
   { timestamps: true }
 );

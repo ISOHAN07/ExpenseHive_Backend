@@ -56,4 +56,55 @@ const loginUser = async (req, res, next) => {
   }
 };
 
-module.exports = { registerUser, loginUser };
+const getCurrentUser = async (req, res, next) => {
+  try {
+    if (!req.user)
+      return res.status(401).json({ message: "Not authorized" });
+
+    res.status(200).json({
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      phone: req.user.phone ?? "",
+      location: req.user.location ?? "",
+      createdAt: req.user.createdAt,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateCurrentUser = async (req, res, next) => {
+  try {
+    const allowed = ["name", "phone", "location"];
+    const updates = {};
+
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, updates, {
+      new: true,
+      runValidators: true,
+      select: "-password",
+    });
+
+    res.status(200).json({
+      id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      phone: updatedUser.phone ?? "",
+      location: updatedUser.location ?? "",
+      createdAt: updatedUser.createdAt,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getCurrentUser,
+  updateCurrentUser,
+};
