@@ -24,6 +24,10 @@ const categorySchema = new mongoose.Schema(
       ref: "User",
       type: mongoose.Schema.Types.ObjectId
     },
+    budget: {
+      type: Number,
+      required: true,
+    }
   },
   { timestamps: true }
 );
