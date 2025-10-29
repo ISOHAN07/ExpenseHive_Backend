@@ -3,6 +3,7 @@ const cors = require("cors");
 const morgan = require("morgan")
 const expenseRoutes = require("../routes/expenses/expenses.router");
 const categoryRoutes = require("../routes/category/category.router")
+const authRoutes = require("../routes/auth/auth.router")
 const app = express();
 
 const allowedOrigins = [
@@ -25,9 +26,11 @@ app.use(
 );
 
 app.use(morgan("combined"));
-
 app.use(express.json());
+
+app.use("/auth", authRoutes);
 app.use("/expenses", expenseRoutes);
 app.use("/categories", categoryRoutes);
+
 
 module.exports = app;
