@@ -1,12 +1,10 @@
 const mongoose = require("mongoose");
-const { type } = require("os");
 
 const categorySchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
     },
     description: {
@@ -32,4 +30,6 @@ const categorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Category", categorySchema);
+categorySchema.index({ createdBy: 1, name: 1 }, { unique: true });
+
+module.exports = mongoose.model("Category", categorySchema);  
