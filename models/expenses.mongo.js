@@ -7,7 +7,7 @@ const expenseSchema = new mongoose.Schema({
     unique: true,
   },
   expenseCategory: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "Category"
   },

@@ -1,12 +1,12 @@
 const Expense = require("../../models/expenses.mongo");
 const Category = require("../../models/category.mongo");
 
-// New Expense
+
 const createExpense = async (req, res, next) => {
   try {
     const {
       expenseId,
-      expenseCategory,
+      expenseCategory, // expecting category ID (_id)
       expenseDesc,
       expenseDate,
       expenseAmount,
@@ -24,11 +24,9 @@ const createExpense = async (req, res, next) => {
       return res.status(400).json({ error: "All fields are required." });
     }
 
-    const categoryExists = await Category.findOne({name:expenseCategory});
+    const categoryExists = await Category.findById(expenseCategory);
     if (!categoryExists) {
-      return res
-        .status(400)
-        .json({ message: "Invalid category — does not exist" });
+      return res.status(400).json({ message: "Invalid category — does not exist" });
     }
 
     const expense = await Expense.create({
@@ -39,15 +37,15 @@ const createExpense = async (req, res, next) => {
       expenseAmount,
       userId,
     });
-    res
-      .status(201)
-      .json({ message: "Expense created successfully", data: expense });
+
+    const populated = await Expense.findById(expense._id).populate("expenseCategory", "name color");
+
+    return res.status(201).json(populated);
   } catch (err) {
     next(err);
   }
 };
 
-//get all expenses
 const getAllExpenses = async (req, res, next) => {
   try {
     const { userId, category, from, to } = req.query;
@@ -61,62 +59,60 @@ const getAllExpenses = async (req, res, next) => {
       if (to) filter.expenseDate.$lte = new Date(to);
     }
 
-    const expenses = await Expense.find(filter).sort({ expenseDate: -1 });
+    const expenses = await Expense.find(filter)
+      .sort({ expenseDate: -1 })
+      .populate("expenseCategory", "name color");
 
-    res.status(200).json({ count: expenses.length, data: expenses });
+    return res.status(200).json(expenses);
   } catch (err) {
     next(err);
   }
 };
 
-// get single expense
 const getExpenseById = async (req, res, next) => {
   try {
-    const expense = await Expense.findOne({ expenseId: req.params.expenseId });
+    const expense = await Expense.findOne({ expenseId: req.params.expenseId }).populate(
+      "expenseCategory",
+      "name color"
+    );
 
     if (!expense) {
       return res.status(404).json({ error: "Expense not found" });
     }
 
-    res.status(200).json({ data: expense });
+    return res.status(200).json(expense);
   } catch (err) {
     next(err);
   }
 };
 
-//update expense
 const updateExpense = async (req, res, next) => {
   try {
     const updated = await Expense.findOneAndUpdate(
       { expenseId: req.params.expenseId },
       req.body,
       { new: true, runValidators: true }
-    );
+    ).populate("expenseCategory", "name color");
 
     if (!updated) {
       return res.status(404).json({ error: "Expense not found" });
     }
 
-    res
-      .status(200)
-      .json({ message: "Expense updated successfully", data: updated });
+    return res.status(200).json(updated);
   } catch (err) {
     next(err);
   }
 };
 
-//delete Expense
 const deleteExpense = async (req, res, next) => {
   try {
-    const deleted = await Expense.findOneAndDelete({
-      expenseId: req.params.expenseId,
-    });
+    const deleted = await Expense.findOneAndDelete({ expenseId: req.params.expenseId });
 
     if (!deleted) {
       return res.status(404).json({ error: "Expense not found" });
     }
 
-    res.status(200).json({ message: "Expense deleted successfully" });
+    return res.status(200).json({ message: "Expense deleted successfully" });
   } catch (err) {
     next(err);
   }
