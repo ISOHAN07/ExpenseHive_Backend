@@ -3,11 +3,10 @@ const Category = require("../../models/category.mongo");
 const Expense = require("../../models/expenses.mongo");
 
 function toObjectId(id) {
-  try {
-    return mongoose.Types.ObjectId(id);
-  } catch {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     return null;
   }
+  return new mongoose.Types.ObjectId(id);
 }
 
 const createCategory = async (req, res, next) => {
