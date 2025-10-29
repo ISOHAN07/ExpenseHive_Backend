@@ -25,8 +25,9 @@ const expenseSchema = new mongoose.Schema({
     min: 0,
   },
   userId: {
-    type: Number,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
+    ref: "User"
   },
 }, { timestamps: true });
 

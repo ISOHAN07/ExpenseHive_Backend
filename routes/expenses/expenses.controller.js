@@ -1,36 +1,21 @@
 const Expense = require("../../models/expenses.mongo");
 const Category = require("../../models/category.mongo");
 
-
 const createExpense = async (req, res, next) => {
   try {
-    const {
-      expenseId,
-      expenseCategory, // expecting category ID (_id)
-      expenseDesc,
-      expenseDate,
-      expenseAmount,
-      userId,
-    } = req.body;
+    const { expenseCategory, expenseDesc, expenseDate, expenseAmount } = req.body;
+    const userId = req.user._id;
 
-    if (
-      !expenseId ||
-      !expenseCategory ||
-      !expenseDesc ||
-      !expenseDate ||
-      !expenseAmount ||
-      !userId
-    ) {
+    if (!expenseCategory || !expenseDesc || !expenseDate || !expenseAmount) {
       return res.status(400).json({ error: "All fields are required." });
     }
 
     const categoryExists = await Category.findById(expenseCategory);
-    if (!categoryExists) {
+    if (!categoryExists)
       return res.status(400).json({ message: "Invalid category — does not exist" });
-    }
 
     const expense = await Expense.create({
-      expenseId,
+      expenseId: Date.now(),
       expenseCategory,
       expenseDesc,
       expenseDate,
@@ -38,7 +23,10 @@ const createExpense = async (req, res, next) => {
       userId,
     });
 
-    const populated = await Expense.findById(expense._id).populate("expenseCategory", "name color");
+    const populated = await Expense.findById(expense._id).populate(
+      "expenseCategory",
+      "name color"
+    );
 
     return res.status(201).json(populated);
   } catch (err) {
@@ -48,10 +36,10 @@ const createExpense = async (req, res, next) => {
 
 const getAllExpenses = async (req, res, next) => {
   try {
-    const { userId, category, from, to } = req.query;
-    const filter = {};
+    const userId = req.user._id;
+    const { category, from, to } = req.query;
+    const filter = { userId };
 
-    if (userId) filter.userId = Number(userId);
     if (category) filter.expenseCategory = category;
     if (from || to) {
       filter.expenseDate = {};
@@ -63,24 +51,7 @@ const getAllExpenses = async (req, res, next) => {
       .sort({ expenseDate: -1 })
       .populate("expenseCategory", "name color");
 
-    return res.status(200).json(expenses);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const getExpenseById = async (req, res, next) => {
-  try {
-    const expense = await Expense.findOne({ expenseId: req.params.expenseId }).populate(
-      "expenseCategory",
-      "name color"
-    );
-
-    if (!expense) {
-      return res.status(404).json({ error: "Expense not found" });
-    }
-
-    return res.status(200).json(expense);
+    res.status(200).json(expenses);
   } catch (err) {
     next(err);
   }
@@ -88,17 +59,17 @@ const getExpenseById = async (req, res, next) => {
 
 const updateExpense = async (req, res, next) => {
   try {
+    const userId = req.user._id;
+
     const updated = await Expense.findOneAndUpdate(
-      { expenseId: req.params.expenseId },
+      { expenseId: req.params.expenseId, userId },
       req.body,
       { new: true, runValidators: true }
     ).populate("expenseCategory", "name color");
 
-    if (!updated) {
-      return res.status(404).json({ error: "Expense not found" });
-    }
+    if (!updated) return res.status(404).json({ error: "Expense not found" });
 
-    return res.status(200).json(updated);
+    res.status(200).json(updated);
   } catch (err) {
     next(err);
   }
@@ -106,22 +77,24 @@ const updateExpense = async (req, res, next) => {
 
 const deleteExpense = async (req, res, next) => {
   try {
-    const deleted = await Expense.findOneAndDelete({ expenseId: req.params.expenseId });
+    const userId = req.user._id;
 
-    if (!deleted) {
-      return res.status(404).json({ error: "Expense not found" });
-    }
+    const deleted = await Expense.findOneAndDelete({
+      expenseId: req.params.expenseId,
+      userId,
+    });
 
-    return res.status(200).json({ message: "Expense deleted successfully" });
+    if (!deleted) return res.status(404).json({ error: "Expense not found" });
+
+    res.status(200).json({ message: "Expense deleted successfully" });
   } catch (err) {
     next(err);
   }
 };
 
 module.exports = {
-  deleteExpense,
   createExpense,
   getAllExpenses,
-  getExpenseById,
   updateExpense,
+  deleteExpense,
 };
