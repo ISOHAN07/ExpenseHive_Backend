@@ -25,6 +25,10 @@ const categorySchema = new mongoose.Schema(
     budget: {
       type: Number,
       required: true,
+    },
+    spent: {
+      type: Number,
+      default: 0
     }
   },
   { timestamps: true }

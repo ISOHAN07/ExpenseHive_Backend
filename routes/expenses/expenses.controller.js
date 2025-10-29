@@ -1,9 +1,11 @@
 const Expense = require("../../models/expenses.mongo");
 const Category = require("../../models/category.mongo");
+const updateCategorySpent = require("../../utils/updateCategorySpent");
 
 const createExpense = async (req, res, next) => {
   try {
-    const { expenseCategory, expenseDesc, expenseDate, expenseAmount } = req.body;
+    const { expenseCategory, expenseDesc, expenseDate, expenseAmount } =
+      req.body;
     const userId = req.user._id;
 
     if (!expenseCategory || !expenseDesc || !expenseDate || !expenseAmount) {
@@ -12,7 +14,9 @@ const createExpense = async (req, res, next) => {
 
     const categoryExists = await Category.findById(expenseCategory);
     if (!categoryExists)
-      return res.status(400).json({ message: "Invalid category — does not exist" });
+      return res
+        .status(400)
+        .json({ message: "Invalid category — does not exist" });
 
     const expense = await Expense.create({
       expenseId: Date.now(),
@@ -22,6 +26,8 @@ const createExpense = async (req, res, next) => {
       expenseAmount,
       userId,
     });
+
+    await updateCategorySpent(expense.expenseCategory, userId);
 
     const populated = await Expense.findById(expense._id).populate(
       "expenseCategory",
@@ -60,14 +66,21 @@ const getAllExpenses = async (req, res, next) => {
 const updateExpense = async (req, res, next) => {
   try {
     const userId = req.user._id;
+    const { expenseId } = req.params;
 
+    const existingExpense = await Expense.findOne({ expenseId, userId });
+    if (!existingExpense)
+      return res.status(404).json({ error: "Expense not found" });
+
+    const prevCategoryId = existingExpense.expenseCategory;
     const updated = await Expense.findOneAndUpdate(
-      { expenseId: req.params.expenseId, userId },
+      { expenseId, userId },
       req.body,
       { new: true, runValidators: true }
     ).populate("expenseCategory", "name color");
 
-    if (!updated) return res.status(404).json({ error: "Expense not found" });
+    await updateCategorySpent(prevCategoryId, userId);
+    await updateCategorySpent(updated.expenseCategory, userId);
 
     res.status(200).json(updated);
   } catch (err) {
@@ -78,13 +91,12 @@ const updateExpense = async (req, res, next) => {
 const deleteExpense = async (req, res, next) => {
   try {
     const userId = req.user._id;
+    const { expenseId } = req.params;
 
-    const deleted = await Expense.findOneAndDelete({
-      expenseId: req.params.expenseId,
-      userId,
-    });
-
+    const deleted = await Expense.findOneAndDelete({ expenseId, userId });
     if (!deleted) return res.status(404).json({ error: "Expense not found" });
+
+    await updateCategorySpent(deleted.expenseCategory, userId);
 
     res.status(200).json({ message: "Expense deleted successfully" });
   } catch (err) {

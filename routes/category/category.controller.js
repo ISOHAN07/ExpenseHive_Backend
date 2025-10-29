@@ -20,9 +20,14 @@ const createCategory = async (req, res, next) => {
       return res.status(400).json({ message: "Category name is required" });
     }
 
-    const existing = await Category.findOne({ name: name.trim(), createdBy: user._id });
+    const existing = await Category.findOne({
+      name: name.trim(),
+      createdBy: user._id,
+    });
     if (existing) {
-      return res.status(409).json({ message: "Category with this name already exists" });
+      return res
+        .status(409)
+        .json({ message: "Category with this name already exists" });
     }
 
     const category = await Category.create({
@@ -47,10 +52,7 @@ const getAllCategories = async (req, res, next) => {
 
     const { name } = req.query;
     const filter = { createdBy: user._id };
-
-    if (name) {
-      filter.name = { $regex: String(name), $options: "i" };
-    }
+    if (name) filter.name = { $regex: name, $options: "i" };
 
     const categories = await Category.find(filter).sort({ name: 1 });
     res.status(200).json(categories);
@@ -68,7 +70,8 @@ const getCategoryById = async (req, res, next) => {
     if (!id) return res.status(400).json({ message: "Invalid category id" });
 
     const category = await Category.findOne({ _id: id, createdBy: user._id });
-    if (!category) return res.status(404).json({ message: "Category not found" });
+    if (!category)
+      return res.status(404).json({ message: "Category not found" });
 
     res.status(200).json(category);
   } catch (err) {
@@ -97,7 +100,9 @@ const updateCategory = async (req, res, next) => {
         _id: { $ne: id },
       });
       if (existing) {
-        return res.status(409).json({ message: "Category name already in use" });
+        return res
+          .status(409)
+          .json({ message: "Category name already in use" });
       }
       updates.name = updates.name.trim();
     }
@@ -108,7 +113,8 @@ const updateCategory = async (req, res, next) => {
       { new: true, runValidators: true }
     );
 
-    if (!updated) return res.status(404).json({ message: "Category not found" });
+    if (!updated)
+      return res.status(404).json({ message: "Category not found" });
 
     res.status(200).json(updated);
   } catch (err) {
@@ -124,13 +130,22 @@ const deleteCategory = async (req, res, next) => {
     const id = toObjectId(req.params.id);
     if (!id) return res.status(400).json({ message: "Invalid category id" });
 
-    const hasExpenses = await Expense.exists({ expenseCategory: id, userId: user._id });
+    const hasExpenses = await Expense.exists({
+      expenseCategory: id,
+      userId: user._id,
+    });
     if (hasExpenses) {
-      return res.status(400).json({ message: "Cannot delete category with existing expenses" });
+      return res
+        .status(400)
+        .json({ message: "Cannot delete category with existing expenses" });
     }
 
-    const deleted = await Category.findOneAndDelete({ _id: id, createdBy: user._id });
-    if (!deleted) return res.status(404).json({ message: "Category not found" });
+    const deleted = await Category.findOneAndDelete({
+      _id: id,
+      createdBy: user._id,
+    });
+    if (!deleted)
+      return res.status(404).json({ message: "Category not found" });
 
     res.status(200).json({ message: "Category deleted" });
   } catch (err) {
