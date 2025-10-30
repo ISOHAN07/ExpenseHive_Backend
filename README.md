@@ -33,12 +33,12 @@ The backend service for ExpenseHive, a personal finance tracker that helps users
 
 3. **Configure Environment Variables**
    ```bash
-   MONGO_URL = ""
-   PORT = ""
-   JWT_SECRET = ""
-   JWT_EXPIRES_IN = ""      
-   BCRYPT_SALT_ROUNDS = ""
-   NODE_ENV = ""
+   MONGO_URL=""
+   PORT=""
+   JWT_SECRET=""
+   JWT_EXPIRES_IN=""      
+   BCRYPT_SALT_ROUNDS=""
+   NODE_ENV=""
 
 4. **Start the Server**
    ```bash
