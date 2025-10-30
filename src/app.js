@@ -4,6 +4,7 @@ const morgan = require("morgan")
 const expenseRoutes = require("../routes/expenses/expenses.router");
 const categoryRoutes = require("../routes/category/category.router")
 const authRoutes = require("../routes/auth/auth.router")
+const pingRoute = require("../routes/ping/ping.router")
 const app = express();
 
 const allowedOrigins = [
