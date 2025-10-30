@@ -29,6 +29,7 @@ app.use(
 app.use(morgan("combined"));
 app.use(express.json());
 
+app.use("/", pingRoute);
 app.use("/auth", authRoutes);
 app.use("/expenses", expenseRoutes);
 app.use("/categories", categoryRoutes);
