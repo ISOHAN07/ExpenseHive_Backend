@@ -25,7 +25,7 @@ The backend service for ExpenseHive, a personal finance tracker that helps users
 1. **Clone this repository**  
    ```bash
    git clone https://github.com/ISOHAN07/ExpenseHive_Backend.git
-   cd Expensive_Backend
+   cd ExpenseHive_Backend
    
 2. **Install Dependencies**
    ```bash
